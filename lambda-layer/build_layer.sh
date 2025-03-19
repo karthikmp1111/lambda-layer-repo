@@ -1,17 +1,17 @@
 #!/bin/bash
-set -e
+set -e  # Exit if any command fails
 
-# Define the target directory
-LAYER_DIR="python/lib/python3.12/site-packages"
-
-# Create the necessary directories
-mkdir -p $LAYER_DIR
-
-# Install dependencies in the layer directory
-pip3 install -r requirements.txt -t $LAYER_DIR --platform manylinux2014_x86_64 --only-binary=:all:
-
-# Package the layer as a zip file
-zip -r lambda_layer.zip python
-
-# Cleanup
+# Create a clean working directory for the layer
 rm -rf python
+mkdir -p python/lib/python3.12/site-packages
+
+# Install required packages
+pip3 install -r requirements.txt -t python/lib/python3.12/site-packages --platform manylinux2014_x86_64 --only-binary=:all:
+
+# Zip the dependencies
+zip -r9 lambda_layer.zip python
+
+# Move ZIP to correct path
+mv lambda_layer.zip ../lambda-layer/lambda_layer.zip  # Ensure it moves to the right directory
+
+echo "✅ Lambda layer built successfully!"
