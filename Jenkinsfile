@@ -35,11 +35,18 @@ pipeline {
                         set -e
                         chmod +x build_layer.sh
                         ./build_layer.sh
+                        
+                        echo "🔍 Checking generated files..."
+                        ls -l 
+
+                        echo "📂 Current directory:"
+                        pwd
                         '''
                     }
                 }
             }
         }
+
 
         stage('Terraform Init & Apply') {
             steps {
