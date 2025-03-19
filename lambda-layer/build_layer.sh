@@ -2,41 +2,24 @@
 set -e  # Exit if any command fails
 
 # Define paths
+LAYER_DIR="python/lib/python3.12/site-packages"
 LAYER_ZIP="../lambda-layer/lambda_layer.zip"
-REQUIREMENTS_HASH_FILE=".requirements_hash"
 
-# Create a clean working directory for the layer
+# Ensure a clean build
 rm -rf python
-mkdir -p python/lib/python3.12/site-packages
+mkdir -p $LAYER_DIR
 
-# Compute hash of current requirements.txt
-NEW_HASH=$(sha256sum requirements.txt | awk '{print $1}')
+# Install dependencies
+pip3 install -r requirements.txt -t $LAYER_DIR --platform manylinux2014_x86_64 --only-binary=:all:
 
-# Check if requirements changed
-if [ -f "$REQUIREMENTS_HASH_FILE" ] && grep -q "$NEW_HASH" "$REQUIREMENTS_HASH_FILE"; then
-    echo "✅ No changes in requirements.txt, skipping package rebuild."
-else
-    echo "🔄 Changes detected in requirements.txt, rebuilding Lambda layer..."
+# Zip dependencies
+zip -r9 lambda_layer.zip python
 
-    # Install dependencies
-    pip3 install -r requirements.txt -t python/lib/python3.12/site-packages --platform manylinux2014_x86_64 --only-binary=:all:
+# Ensure lambda-layer directory exists before moving
+mkdir -p ../lambda-layer
 
-    # Zip the dependencies
-    zip -r9 lambda_layer.zip python
+# Move ZIP to lambda-layer directory
+mv -f lambda_layer.zip "$LAYER_ZIP"
 
-    # Save new hash
-    echo "$NEW_HASH" > "$REQUIREMENTS_HASH_FILE"
-
-    # Ensure lambda-layer directory exists before moving
-    mkdir -p ../lambda-layer
-
-    # Move ZIP only if it's different
-    if [ ! -f "$LAYER_ZIP" ] || ! cmp -s lambda_layer.zip "$LAYER_ZIP"; then
-        echo "📂 Moving ZIP to lambda-layer directory..."
-        mv lambda_layer.zip "$LAYER_ZIP"
-    else
-        echo "✅ ZIP file is already up to date."
-    fi
-fi
-
-echo "✅ Lambda layer build process completed!"
+echo "✅ Lambda layer build completed!"
+ls -l ../lambda-layer/
