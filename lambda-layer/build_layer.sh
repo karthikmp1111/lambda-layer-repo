@@ -11,7 +11,9 @@ pip3 install -r requirements.txt -t python/lib/python3.12/site-packages --platfo
 # Zip the dependencies
 zip -r9 lambda_layer.zip python
 
-# Move ZIP to correct path
-mv lambda_layer.zip ../lambda-layer/lambda_layer.zip  # Ensure it moves to the right directory
+# Move ZIP to the correct directory ONLY if it's not already there
+if [ ! -f "../lambda-layer/lambda_layer.zip" ]; then
+    mv lambda_layer.zip ../lambda-layer/lambda_layer.zip
+fi
 
 echo "✅ Lambda layer built successfully!"
