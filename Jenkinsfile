@@ -43,7 +43,7 @@ pipeline {
 
         stage('Terraform Init & Apply') {
             steps {
-                dir('lambda-layer/terraform') {
+                dir('terraform') {
                     sh 'terraform init'
                     sh 'terraform apply -auto-approve'
                 }
